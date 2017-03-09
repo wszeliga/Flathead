@@ -13,11 +13,11 @@ router.all('/*', function(req, res) {
     res.sendStatus(200);
     return;
   }
-  
+
   var db = low(dbPath, {
     async: false
   });
-  
+
   var suites = db('suites').where({active: true});
   var routes = [];
   var routeWildcards = [];
@@ -35,15 +35,22 @@ router.all('/*', function(req, res) {
       }
     });
   });
-  
+
   var matchingRoute = routes[0] || routeWildcards[0];
   if(matchingRoute){
     res.type('json');
+    var body;
     if(req.method !== 'GET' && matchingRoute.response.mirrorRequest){
-      res.send(req.body);
+      body = req.body;
     } else {
-      res.send(matchingRoute.response.content.text);
+      body = matchingRoute.response.content.text;
     }
+
+    var delay =  matchingRoute.response.delay || 0;
+    setTimeout(function(){
+      res.send(body);
+    }, delay);
+
   } else if(req.originalUrl === '/'){
     res.redirect('/admin');
   } else {

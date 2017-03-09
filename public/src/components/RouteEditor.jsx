@@ -48,6 +48,12 @@ let RouteEditor = React.createClass({
     this.setState({ route: newRoute });
   },
 
+  _changeDelay(event) {
+    var newRoute = _.cloneDeep(this.state.route);
+    newRoute.response.delay = event.target.value;
+    this.setState({ route: newRoute });
+  },
+
   _changeMethod(event) {
     var newRoute = _.cloneDeep(this.state.route);
     newRoute.request.method = event.target.value;
@@ -68,9 +74,9 @@ let RouteEditor = React.createClass({
       newRoute.response.content.text = newResponseText;
 
       //CEW - 04-05-2016 Use jsonlint and json parse to test if json is valid.
-      //Jsonlint only returns one line error at a time, so we reset the highlight on all 
+      //Jsonlint only returns one line error at a time, so we reset the highlight on all
       //lines before doing any tests on the input.
-      //I also don’t want to prevent any saving of the text, just in case 
+      //I also don’t want to prevent any saving of the text, just in case
       //a user intentially wants the json to be bad.
       this.removeAllErrorHighlights();
       let ret = this._validateResponseText(newResponseText);
@@ -132,8 +138,8 @@ let RouteEditor = React.createClass({
 
   //#region Methods to highlight text
 
-  //Highlights given line of code.  
-  //If "remove", remove specified highlight 
+  //Highlights given line of code.
+  //If "remove", remove specified highlight
   //from code line.
   highlightErrorLine(lineNumber, remove = false) {
     let editor = this.refs.CodeMirror;
@@ -254,6 +260,13 @@ let RouteEditor = React.createClass({
               value={this.state.route.request.url}
               fullWidth={true}
               onChange={this._changeURL}
+              onBlur={this._reportChange}/>
+            <TextField
+              floatingLabelText="Delay (in ms)"
+              ref="delay"
+              value={this.state.route.response.delay}
+              fullWidth={false}
+              onChange={this._changeDelay}
               onBlur={this._reportChange}/>
 
             <div>
