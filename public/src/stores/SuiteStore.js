@@ -20,7 +20,7 @@ function addSuite(suite) {
   });
   _data.suites.push(suite);
   _data.selectedSuiteId = suite.id;
-  
+
   $.ajax({
     url:'/suites',
     method: 'POST',
@@ -38,6 +38,7 @@ function createNewSuite() {
   suite.id = uuid.v4();
   suite.name = "New Suite";
   suite.active = true;
+  suite.delay = 0;
   suite.routes = [];
   addSuite(suite);
 }
@@ -49,7 +50,7 @@ function updateSuite(suite) {
       _data.suites[i] = suite;
     }
   });
-  
+
   $.ajax({
     url:'/suites',
     method: 'PUT',
@@ -63,7 +64,7 @@ function updateSuite(suite) {
 
 function deleteSuite(suite) {
   _data.suites = _data.suites.filter((oldSuite)=> oldSuite.id !== suite.id);
-  
+
   $.ajax({
     url:'/suites',
     method: 'DELETE',
@@ -81,7 +82,7 @@ function selectSuite(suite){
 
 function replaceAll(suites){
   _data.suites = suites;
-  
+
   let selectedSuite = suites.filter((suite) => suite.id === _data.selectedSuiteId)[0];
   if(!selectedSuite)
     _data.selectedSuiteId = null;
@@ -130,7 +131,7 @@ let SuiteStore = assign({}, BaseStore, {
   getAll() {
     return _data;
   },
-  
+
   getSelectedSuite() {
     return _data.selectedSuiteId;
   },
@@ -144,58 +145,58 @@ let SuiteStore = assign({}, BaseStore, {
         createNewSuite(action.suite);
         SuiteStore.emitChange();
         break;
-        
+
       case Constants.ActionTypes.ADD_SUITE:
         if (action.suite) {
           addSuite(action.suite);
           SuiteStore.emitChange();
         }
         break;
-        
-        
+
+
       case Constants.ActionTypes.UPDATE_SUITE:
         if (action.suite) {
           updateSuite(action.suite);
           SuiteStore.emitChange();
         }
         break;
-        
+
       case Constants.ActionTypes.DELETE_SUITE:
         if (action.suite) {
           deleteSuite(action.suite);
           SuiteStore.emitChange();
         }
         break;
-        
+
       case Constants.ActionTypes.SELECT_SUITE:
         if (action.suite) {
           selectSuite(action.suite);
           SuiteStore.emitChange();
         }
         break;
-        
+
       case Constants.ActionTypes.REPLACE_ALL_SUITES:
         if (action.suites) {
           replaceAll(action.suites);
           SuiteStore.emitChange();
         }
         break;
-        
+
       case Constants.ActionTypes.ADD_ROUTE:
         if (action.suiteId && action.route) {
           addRoute(action.suiteId, action.route, action.isCopy);
           SuiteStore.emitChange();
         }
         break;
-        
-        
+
+
       case Constants.ActionTypes.UPDATE_ROUTE:
         if (action.suiteId && action.route) {
           updateRoute(action.suiteId, action.route);
           SuiteStore.emitChange();
         }
         break;
-        
+
       case Constants.ActionTypes.DELETE_ROUTE:
         if (action.suiteId && action.route) {
           deleteRoute(action.suiteId, action.route);
