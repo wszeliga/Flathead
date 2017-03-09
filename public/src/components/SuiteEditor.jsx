@@ -15,7 +15,7 @@ let SuiteEditor = React.createClass({
       suite: null
     };
   },
-  
+
   getInitialState() {
     return {
       suite: _.cloneDeep(this.props.suite)
@@ -32,12 +32,18 @@ let SuiteEditor = React.createClass({
     this.setState({suite: newSuite});
   },
 
+  _changeDelay(event){
+    var newSuite = _.cloneDeep(this.state.suite);
+    newSuite.delay = event.target.value;
+    this.setState({suite: newSuite});
+  },
+
   _changeActive(event, toggled){
     var newSuite = _.cloneDeep(this.state.suite);
     newSuite.active = toggled;
     SuiteActionCreators.updateSuite(newSuite);
   },
-  
+
   _addRoute(){
     var newSuite = _.cloneDeep(this.state.suite);
     var newRoute = {
@@ -54,18 +60,18 @@ let SuiteEditor = React.createClass({
     };
     RouteActionCreators.addRoute(this.state.suite.id, newRoute);
   },
-  
+
   _changeRoute(newRoute){
     RouteActionCreators.updateRoute(this.state.suite.id, newRoute);
   },
-  
+
   _copyRoute(routeToCopy, routeIndex){
     var newRoute = _.cloneDeep(routeToCopy);
     newRoute.id = uuid.v4();
-    
+
     RouteActionCreators.addRoute(this.state.suite.id, newRoute, true);
   },
-  
+
   _removeDuplicateRoutes(){
     var newSuite = _.cloneDeep(this.state.suite);
     var i,j;
@@ -81,7 +87,7 @@ let SuiteEditor = React.createClass({
     }
     SuiteActionCreators.updateSuite(newSuite);
   },
-  
+
   _flattenJSON(){
     var newSuite = _.cloneDeep(this.state.suite);
     newSuite.routes.map((route, i) => {
@@ -93,7 +99,7 @@ let SuiteEditor = React.createClass({
     });
     SuiteActionCreators.updateSuite(newSuite);
   },
-  
+
   _prettyPrintJSON(){
     var newSuite = _.cloneDeep(this.state.suite);
     newSuite.routes.map((route, i) => {
@@ -105,15 +111,15 @@ let SuiteEditor = React.createClass({
     });
     SuiteActionCreators.updateSuite(newSuite);
   },
-  
+
   _deleteRoute(deletedRoute){
     RouteActionCreators.deleteRoute(this.state.suite.id, deletedRoute);
   },
-  
+
   _clickFileInput(){
     this.refs.harInput.click();
   },
-  
+
   _importHAR(event){
     let input = event.target;
     let files;
@@ -132,11 +138,11 @@ let SuiteEditor = React.createClass({
     } else {
       files = input.files;
     }
-    
+
     if(!files){
       console.log('Looks like theres a problem');
     } else if (!files[0]) {
-      alert("Please select a file before clicking 'Load'");               
+      alert("Please select a file before clicking 'Load'");
     } else {
       let file = files[0];
       let fr = new FileReader();
@@ -144,19 +150,19 @@ let SuiteEditor = React.createClass({
       fr.readAsText(file);
     }
   },
-  
+
   _parseHAR(event){
     let parsedHAR = JSON.parse(event.target.result)
                       .log
                       .entries
                       .filter((route) => route.response.content.mimeType === "application/json");
-                      
+
     parsedHAR.map((route) => {
       route.id = uuid.v4();
-      
+
       // Make URL into relative
       route.request.url = '/' + route.request.url.split('/').splice(3).join('/');
-      
+
       // Remove unneeded metadata to save space
       delete route.cache;
       delete route.connection;
@@ -166,13 +172,13 @@ let SuiteEditor = React.createClass({
       delete route.time;
     });
     console.log('Parsed Import', parsedHAR);
-    
+
     var newSuite = _.cloneDeep(this.state.suite);
     newSuite.routes = newSuite.routes.concat(parsedHAR);
     console.log('newSuite', newSuite);
     SuiteActionCreators.updateSuite(newSuite);
   },
-  
+
   _saveSuite(){
     SuiteActionCreators.updateSuite(this.state.suite);
   },
@@ -185,7 +191,7 @@ let SuiteEditor = React.createClass({
     console.log('Exporting');
     window.location.href = "data:text/json;charset=utf-8,";
   },
-  
+
   render() {
     if(this.state.suite){
       let suiteExportURI = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(this.state.suite));
@@ -194,23 +200,28 @@ let SuiteEditor = React.createClass({
         <div className="suite-editor">
           <div className="suite-editor-buttons">
             <RaisedButton label="Delete" onClick={this._deleteSuite} />
-            <RaisedButton 
-                label="Export" 
+            <RaisedButton
+                label="Export"
                 linkButton={true}
                 href={ suiteExportURI }
                 download={ suiteExportFileName }/>
           </div>
           <div className="suite-metadata-editor">
-            <TextField 
-                floatingLabelText="Name" 
+            <TextField
+                floatingLabelText="Name"
                 fullWidth={true}
-                value={this.state.suite.name} 
-                onChange={this._changeName} 
+                value={this.state.suite.name}
+                onChange={this._changeName}
                 onBlur={this._saveSuite} />
-            <Toggle 
-                label="Active" 
-                defaultToggled={this.state.suite.active} 
+            <Toggle
+                label="Active"
+                defaultToggled={this.state.suite.active}
                 onToggle={this._changeActive} />
+            <TextField
+                floatingLabelText="Default Delay (ms)"
+                value={this.state.suite.delay}
+                onChange={this._changeDelay}
+                onBlur={this._saveSuite} />
           </div>
           <hr />
           <h3>Routes</h3>
@@ -224,11 +235,11 @@ let SuiteEditor = React.createClass({
             <RaisedButton label="Minify JSON" onClick={this._flattenJSON} />
           </div>
             <ul className="route-list">
-            { 
+            {
               this.state.suite.routes.map((route, i) => {
                 return (
                   <li key={route.id}>
-                    <RouteEditor 
+                    <RouteEditor
                         route={route}
                         active={this.state.suite.active}
                         onChange={this._changeRoute}
@@ -236,7 +247,7 @@ let SuiteEditor = React.createClass({
                         onCopy={this._copyRoute.bind(this,route,i)}/>
                   </li>
                 );
-              }) 
+              })
             }
             </ul>
         </div>
