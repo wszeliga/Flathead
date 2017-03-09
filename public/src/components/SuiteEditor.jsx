@@ -53,6 +53,7 @@ let SuiteEditor = React.createClass({
         url: ''
       },
       response: {
+        delay: this.state.suite.delay || 0,
         content:{
           text:''
         }
@@ -192,6 +193,14 @@ let SuiteEditor = React.createClass({
     window.location.href = "data:text/json;charset=utf-8,";
   },
 
+  _defaultDelay(){
+    var newSuite = _.cloneDeep(this.state.suite);
+    for(var i = 0; i < newSuite.routes.length; i++){
+        newSuite.routes[i].response.delay = this.state.suite.delay || 0;
+    }
+    SuiteActionCreators.updateSuite(newSuite);
+  },
+
   render() {
     if(this.state.suite){
       let suiteExportURI = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(this.state.suite));
@@ -218,7 +227,7 @@ let SuiteEditor = React.createClass({
                 defaultToggled={this.state.suite.active}
                 onToggle={this._changeActive} />
             <TextField
-                floatingLabelText="Default Delay (ms)"
+                floatingLabelText="Default Response Delay (ms)"
                 value={this.state.suite.delay}
                 onChange={this._changeDelay}
                 onBlur={this._saveSuite} />
@@ -233,6 +242,7 @@ let SuiteEditor = React.createClass({
             <RaisedButton label="Remove Duplicates" onClick={this._removeDuplicateRoutes} />
             <RaisedButton label="Pretty Print JSON" onClick={this._prettyPrintJSON} />
             <RaisedButton label="Minify JSON" onClick={this._flattenJSON} />
+            <RaisedButton label="Apply Delay" onClick={this._defaultDelay} />
           </div>
             <ul className="route-list">
             {
